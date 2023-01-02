@@ -33,10 +33,14 @@ function parseMoves!(line, stacks)
     #println("Parsing line = $line")
     line = replace(line, "move" => "", "from" => "", "to" => "")
     qnt, from, to = split(line) .|> e -> parse(Int, e)
-    for _ in 1:qnt
-        el = pop!(stacks[from])
-        push!(stacks[to], el)
-    end
+    # for (i, s) in enumerate(stacks)
+    #     println("$i) $s")
+    # end
+    # println("line = $line")
+    e = length(stacks[from])
+    s = e - qnt + 1
+    el = splice!(stacks[from], s:e)
+    stacks[to] = append!(stacks[to], el)
     return
 end
 
