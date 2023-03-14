@@ -4,7 +4,7 @@ mutable struct Monkey_Data
     test::Int
     if_true::Int
     if_false::Int
-    inspected::Int
+    inspected::UInt128
 end
 
 function fcnFromString(s)
@@ -64,7 +64,7 @@ function main(filename, rounds)
         end
     end
 
-    #monkeys .|> x -> x.operation(1) .|> println
+    cycle_lenght = (monkeys .|> x -> x.test) |> prod
 
     for r in 1:rounds
         # println("Round $r")
@@ -72,7 +72,8 @@ function main(filename, rounds)
             while !isempty(monkey.items)
                 item = popfirst!(monkey.items)
                 monkey.inspected += 1
-                calc = floor(Int, monkey.operation(item) / 3)
+                # calc = floor(Int, monkey.operation(item) / 1)
+                calc = monkey.operation(item) % cycle_lenght
                 # print("Worry level $calc ")
                 # println("Could be divied by $(monkey.test)")
                 if calc % monkey.test == 0
@@ -83,10 +84,11 @@ function main(filename, rounds)
             end
         end
     end
-    
+    monkeys .|> x -> x.inspected .|> println
     (monkeys .|> x -> x.inspected) |> sort |> x -> x[end] * x[end-1]
 end
 
 for arg in ARGS
-    println(arg, " -> ", main(arg, 20))
+    @time res = main(arg, 10000) 
+    println(arg, " -> ", res)
 end
