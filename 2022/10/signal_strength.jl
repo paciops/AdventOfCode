@@ -1,22 +1,10 @@
 using DataStructures
 
-function enc_dec(q, el = 0)
-    r = dequeue!(q)
-    enqueue!(q, el)
-    return r
-end
-
 function main(filename, rows, cols)
     open(filename) do file
         
         cycles = [1]
-        n = 1
-        queue = Queue{Int}(n)
         m = fill('.', rows * cols)
-
-        for _ in 1:n 
-            enqueue!(queue, 0)
-        end
 
         for line in eachline(file)
             command = first(split(line, " "))
