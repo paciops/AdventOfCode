@@ -32,6 +32,19 @@ function find_index(matrix, el)
     throw("$el element not found")
 end
 
+function find_all(matrix, el)
+    x, y = size(matrix)
+    positions = Vector{Position}()
+    for row in 1:x
+        for col in 1:y
+            if matrix[row, col] == el
+                push!(positions, Position(row, col))
+            end
+        end
+    end
+    return positions
+end
+
 function find_close(matrix, center::Position)
     # return the list of positions close to point
     n, m = size(matrix)
@@ -84,10 +97,10 @@ function bfs(distances::Dict{Position, Vector{Position}}, root::Position, dest::
     if dest in keys(dist)
         return dist[dest]
     end
-    m = maximum(values(dist))
-    println("max = ", m)
-    println(filter(x -> x[2] == m , dist))
-    return -1
+    # m = maximum(values(dist))
+    # println("max = ", m)
+    # println(filter(x -> x[2] == m , dist))
+    return typemax(Int)
 end
 
 function main(filename)
@@ -101,15 +114,18 @@ function main(filename)
             distances[p] = friends
         end
     end
+    paths = []
     source = find_index(mat, to_char("S"))
     mat[source.x, source.y] = 1
     dest   = find_index(mat, to_char("E"))
     mat[dest.x, dest.y] = 26
 
-    #eachrow(mat) .|> println
-    
-    #println("source = ", distances[source])
-    return bfs(distances, source, dest)
+    # find all 'a' in the matrix
+    for pos in find_all(mat, 1)
+        push!(paths, bfs(distances, pos, dest))
+    end
+
+    return minimum(paths)
 end
 
 for arg in ARGS
