@@ -53,6 +53,37 @@ function compare(left, right, padding = 1)
     return nothing
 end
 
+function mysort(left, right)
+    leftsize = length(left)
+    rightsize = length(right)
+    tot = max(leftsize, rightsize)
+    for i in 1:tot
+        i > leftsize && return true
+        i > rightsize && return false
+
+        @match (left[i], right[i]) begin
+            (x::Int, y::Int) => begin
+                x < y && return true
+                x > y && return false
+            end
+            (x::Vector, y::Vector) => begin
+                result = mysort(x, y)
+                result !== nothing && return result
+            end
+            (x::Vector, y::Int) => begin
+                result = mysort(x, [y])
+                result !== nothing && return result
+            end
+            (x::Int, y::Vector) => begin
+                result = mysort([x], y)
+                result !== nothing && return result
+            end
+            
+        end
+    end
+    return nothing
+end
+
 function main(filename)
     list = Vector{Any}()
     open(filename) do file
@@ -67,6 +98,10 @@ function main(filename)
     # list .|> el -> println(el, "\ttype = ", typeof(el))
     result = []
     pair = 1
+    decoderkeys = [[2]] ,[[6]]
+    sorted = copy(list)
+    push!(sorted, decoderkeys[1], decoderkeys[2])
+    sort!(sorted; lt=mysort)
     while !isempty(list)
         println("== Pair $pair ==")
         left = splice!(list, 1)
@@ -78,11 +113,14 @@ function main(filename)
         pair += 1
         println()
     end
-    println("result = ", result)
-    return sum(result)
+    println("result = $result")
+    println("sorted")
+    sorted .|> println
+    pos = findfirst(x -> x == decoderkeys[1], sorted), findfirst(x -> x === decoderkeys[2], sorted)
+    return sum(result), pos[1] * pos[2]
 end
 
 for arg in ARGS
-    res = main(arg) 
+    res = main(arg)
     println(arg, " -> ", res)
 end
