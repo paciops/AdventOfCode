@@ -1,67 +1,56 @@
-openbracket = c -> c == '['
-closebracket = c -> c == ']'
-
-function findbracket(str)
-    start = nothing
-    count = 0
-    positions = []
-    for i in eachindex(str)
-        c = str[i]
-        if openbracket(c)
-            if count == 0
-                start = i
-            end
-            count += 1
-        elseif closebracket(c)
-            if count == 1
-                push!(positions, (start, i))
-            end
-            count -=1
-        end
-    end
-    return positions
-end
+using Match
 
 function parseline(original::String)
     return eval(Meta.parse(original))
 end
 
-function compare(left, right)
-    println("- Compare $left vs $right")
-    leftlen = length(left)
-    rightlen = length(right)
-    for i in 1:max(leftlen, rightlen)
-        if i > leftlen
-            println("  - Left side ran out of items, so inputs are in the right order")
+makespace = n -> '\t' ^ n
+
+function compare(left, right, padding = 1)
+    leftsize = length(left)
+    rightsize = length(right)
+    tot = max(leftsize, rightsize)
+    for i in 1:tot
+        if i > leftsize
+            println(makespace(padding),"- Left side ran out of items, so inputs are in the right order")
             return true
-        elseif i > rightlen
-            println("  - Right side ran out of items, so inputs are not in the right order")
+        end
+        if i > rightsize
+            println(makespace(padding),"- Right side ran out of items, so inputs are not in the right order")
             return false
         end
-        currleft = left[i]
-        currright = right[i]
-        println("  - Compare $currleft vs $currright")
-        if left[i] isa Vector && right[i] isa Vector
-            return compare(currleft, currright)
-        end
-        if typeof(currleft) != typeof(currright)
-            if left[i] isa Vector
-                currright = [currright]
-                println("    - Mixed types; convert right to $currright and retry comparison")
-            else
-                currleft = [currleft]
-                println("    - Mixed types; convert left to $currleft and retry comparison")
+
+        println(makespace(padding), "- Compare $(left[i]) vs $(right[i])")
+
+        @match (left[i], right[i]) begin
+            (n::Int, m::Int) => begin
+                if n < m
+                    println(makespace(padding+1), "- Left side is smaller, so inputs are in the right order")
+                    return true   
+                elseif n > m
+                    println(makespace(padding+1), "- Right side is smaller, so inputs are not in the right order")
+                    return false
+                end
             end
-            return compare(currleft, currright)
-        elseif currleft < currright
-            println("    - Left side is smaller, so inputs are in the right order")
-            return true
-        elseif currleft > currright
-            println("    - Right side is smaller, so inputs are not in the right order")
-            return false
+            (n::Vector, m::Vector) => begin
+                res = compare(n, m, padding + 1)
+                res !== nothing && return res
+            end
+            (n::Vector, m::Int) => begin
+                println(makespace(padding+1),"- Mixed types; convert right to $([m]) and retry comparison")
+                res = compare(n, [m], padding + 1)
+                res !== nothing && return res
+            end
+            (n::Int, m::Vector) => begin
+                println(makespace(padding+1),"- Mixed types; convert left to $([n]) and retry comparison")
+                res = compare([n], m, padding + 1)
+                res !== nothing && return res
+            end
+            _ => throw("Type not matched")
         end
     end
-    throw("should not be here")
+
+    return nothing
 end
 
 function main(filename)
@@ -82,7 +71,8 @@ function main(filename)
         println("== Pair $pair ==")
         left = splice!(list, 1)
         right = splice!(list, 1)
-        if compare(left, right)
+        println("- Compare $left vs $right")
+        if compare(left, right) === true
             push!(result, pair)
         end
         pair += 1
