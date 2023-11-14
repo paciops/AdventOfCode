@@ -5,56 +5,48 @@ function createMatrix(x,y)
 end
 
 sortRange = (a,b) -> a > b ? (b:a) : (a:b)
+center = ((y, x)) -> (y, x+1)
+left = ((y, x)) -> (y-1, x+1)
+right = ((y, x)) -> (y+1, x+1)
 
 ORIGIN = '+'
 FREE = '.'
 ROCK = '#'
 SAND = 'o'
 
-getXs = map -> keys(map) |> collect .|> last  |> Set
-getYs = map -> keys(map) |> collect .|> first |> Set
+function move(map, start, limit)
+    visited = Set()
+    queue = [start]
+    count = 0
+    while length(queue) > 0
+        y, x = popfirst!(queue)
+        if x == limit
+            continue
+        end
+        if (y, x) in visited
+            continue
+        else
+            if !haskey(map, (y, x))
+                map[(y, x)] = SAND
+            end
 
-function nextPosition((y,x), map, limit, Xs)
-    void = false
-    while true
-        if x > maximum(Xs)
-            if x == limit
-                # reached bottom
-                return (y, x-1), void
+            if !haskey(map, right(y, x))
+                pushfirst!(queue, right(y, x))
             end
-            for y in getYs(map)
-                map[(y, x)] = FREE
+            if !haskey(map, left(y, x))
+                pushfirst!(queue, left(y, x))
             end
-            push!(Xs, x)
+            if !haskey(map, center(y, x))
+                pushfirst!(queue, center(y, x))
+            end
         end
-        curr = map[(y,x)]
-        if curr == ORIGIN
-            x+=1
-        elseif curr == FREE
-            x+=1
-        elseif curr in [SAND, ROCK]
-            if haskey(map, (y-1,x)) && map[(y-1,x)] == FREE
-                return nextPosition((y-1,x), map, limit, Xs)
-            elseif haskey(map, (y+1,x)) && map[(y+1,x)] == FREE
-                return nextPosition((y+1,x), map, limit, Xs)
-            elseif !haskey(map, (y-1,x))
-                println("VOID IN LEFT ", (y-1,x))
-                # add a left column
-                for x in Xs
-                    map[(y-1, x)] = FREE
-                end
-                return nextPosition((y-1,x), map, limit, Xs)
-            elseif !haskey(map, (y+1,x))
-                println("VOID IN RIGHT ", (y+1,x))
-                # add a right column
-                for x in Xs
-                    map[(y+1, x)] = FREE
-                end
-                return nextPosition((y+1,x), map, limit, Xs)
-            end
-            return (y, x-1), void
-        end
+        # if count % 1000 == 0
+        #     Base.run(`clear`)
+        #     printMap(map)
+        # end
+        count += 1
     end
+    return count
 end
 
 function printMap(map)
@@ -63,12 +55,15 @@ function printMap(map)
     println()
     for x in minX:maxX 
         for y in minY:maxY
-            print(map[(y,x)])
+            if haskey(map, (y,x))
+                print(map[(y,x)])
+            else
+                print(FREE)
+            end
         end 
         println()
     end
     println()
-
 end
 
 function main(filename)
@@ -89,37 +84,10 @@ function main(filename)
             end
         end
     end
-    minX, maxX = (keys(map) .|> last) |> minMax
-    minY, maxY = (keys(map) .|> first) |> minMax
-    for x = minX:maxX
-        for y = minY:maxY
-            key = (y,x)
-            if !haskey(map, key)
-                map[key]=FREE
-            end
-        end
-    end
-
-    # sortedKeys = (keys(map) |> keys -> sort(keys|>collect; by=x->(x[1],x[2])))
-    # basic map is created
+    println(move(map, origin, last((keys(map) .|> last) |> minMax)+2))
     # printMap(map)
-    # now iterate untill no more sand is droppable
-    count = 0
-    void = false 
-    while map[origin] !== SAND
-        index, void = nextPosition(origin, map, maxX+2, getXs(map))
-        map[index] = SAND
-        if count % 1000 == 0   
-            Base.run(`clear`)
-            printMap(map)
-        end
-        count += 1
-    end
-    println("Count = ", count)
-    # printMap(map)
-    
 end
 
 
-main("easy.txt")
-main("hard.txt")
+@time main("easy.txt")
+@time main("hard.txt")
