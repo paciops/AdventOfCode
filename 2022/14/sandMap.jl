@@ -11,9 +11,22 @@ FREE = '.'
 ROCK = '#'
 SAND = 'o'
 
-function nextPosition((y,x), map)
+getXs = map -> keys(map) |> collect .|> last  |> Set
+getYs = map -> keys(map) |> collect .|> first |> Set
+
+function nextPosition((y,x), map, limit, Xs)
     void = false
     while true
+        if x > maximum(Xs)
+            if x == limit
+                # reached bottom
+                return (y, x-1), void
+            end
+            for y in getYs(map)
+                map[(y, x)] = FREE
+            end
+            push!(Xs, x)
+        end
         curr = map[(y,x)]
         if curr == ORIGIN
             x+=1
@@ -21,23 +34,32 @@ function nextPosition((y,x), map)
             x+=1
         elseif curr in [SAND, ROCK]
             if haskey(map, (y-1,x)) && map[(y-1,x)] == FREE
-                return nextPosition((y-1,x), map)
+                return nextPosition((y-1,x), map, limit, Xs)
             elseif haskey(map, (y+1,x)) && map[(y+1,x)] == FREE
-                return nextPosition((y+1,x), map)
-            end
-            if !haskey(map, (y-1,x))
+                return nextPosition((y+1,x), map, limit, Xs)
+            elseif !haskey(map, (y-1,x))
                 println("VOID IN LEFT ", (y-1,x))
-                void = true
+                # add a left column
+                for x in Xs
+                    map[(y-1, x)] = FREE
+                end
+                return nextPosition((y-1,x), map, limit, Xs)
             elseif !haskey(map, (y+1,x))
                 println("VOID IN RIGHT ", (y+1,x))
-                void = true
+                # add a right column
+                for x in Xs
+                    map[(y+1, x)] = FREE
+                end
+                return nextPosition((y+1,x), map, limit, Xs)
             end
             return (y, x-1), void
         end
     end
 end
 
-function printMap(map, (minX, maxX), (minY, maxY))
+function printMap(map)
+    minX, maxX = (keys(map) .|> last) |> minMax
+    minY, maxY = (keys(map) .|> first) |> minMax
     println()
     for x in minX:maxX 
         for y in minY:maxY
@@ -67,9 +89,8 @@ function main(filename)
             end
         end
     end
-    minX, maxX = (keys(map) .|> el -> el[2]) |> minMax
-    minY, maxY = (keys(map) .|> el -> el[1]) |> minMax
-    _printMap = () -> printMap(map, (minX, maxX),(minY, maxY))
+    minX, maxX = (keys(map) .|> last) |> minMax
+    minY, maxY = (keys(map) .|> first) |> minMax
     for x = minX:maxX
         for y = minY:maxY
             key = (y,x)
@@ -81,17 +102,21 @@ function main(filename)
 
     # sortedKeys = (keys(map) |> keys -> sort(keys|>collect; by=x->(x[1],x[2])))
     # basic map is created
+    # printMap(map)
     # now iterate untill no more sand is droppable
     count = 0
     void = false 
-    while map[(origin[1], origin[2]+1)] == FREE && !void
-        index, void = nextPosition(origin, map)
+    while map[origin] !== SAND
+        index, void = nextPosition(origin, map, maxX+2, getXs(map))
         map[index] = SAND
-        # _printMap()
+        if count % 1000 == 0   
+            Base.run(`clear`)
+            printMap(map)
+        end
         count += 1
     end
-    println("Count = ", count-1)
-    _printMap()
+    println("Count = ", count)
+    # printMap(map)
     
 end
 
