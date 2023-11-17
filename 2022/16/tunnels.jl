@@ -47,8 +47,6 @@ function nextnode(key::String, map::Dict{String, Node}, open::Set{String})
     while !isempty(queue)
         current_node = popfirst!(queue)
         _, current_distance = flows[current_node]
-        
-
         push!(visited, current_node)
 
         for k in filter(el -> !(el in visited), map[current_node].valves)
@@ -67,34 +65,44 @@ function nextnode(key::String, map::Dict{String, Node}, open::Set{String})
     return index
 end
 
-function main(filename, seconds = 30)
-    map, next = parseInput(filename)
-    # println.(zip(keys(map), values(map)))
+function notthebest(n::Int, next::String, map::Dict{String, Node}, seconds::Int, verbose:: Bool)
     open = Set{String}()
     total = 0
     sum = 0
+    sequence = Vector{String}()
     for i = 1:seconds
-        println("== Minute $(i) ==")
+        push!(sequence, next)
+        verbose && println("== Minute $(i) ==")
         msg = length(open) > 0 ? "Valves $(join(open, ", ")) are open" : "No valves are open"
         msg *= sum > 0 ? ", releasing $(sum) pressure." : ""
-        println(msg)
+        verbose && println(msg)
         key = next
         curr = map[key]
         if curr.flow == 0 || key in open
-            next = nextnode(key, map, open)
-            println("You move to $(next)")
+            if n != length(open)
+                next = nextnode(key, map, open)
+                verbose && println("You move to $(next)")
+            end
         else
-            println("You open valve $(key)")
+            verbose && println("You open valve $(key)")
             sum += curr.flow
-            # todo change 30 to seconds
-            total += curr.flow * (30-i)
+            total += curr.flow * (seconds-i)
             next = key
             push!(open, key)
         end
-        println("")
+        verbose && println()
     end
-    return total
+    return total, sequence
 end
 
-println(main("easy.txt", 30))
-# println(main("hard.txt", 30))
+function main(filename, seconds = 30, verbose = false)
+    map, next = parseInput(filename)
+    # println.(zip(keys(map), values(map)))
+    n = length(keys(map))
+    t, sequence = notthebest(n, next, map, seconds, verbose)
+    # println(sequence)
+    return t
+end
+
+@time println(main("easy.txt", 30))
+@time println(main("hard.txt", 30))
