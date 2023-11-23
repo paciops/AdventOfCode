@@ -2,7 +2,7 @@ using DataStructures
 
 function parseValve(data::Vector{String})
     valves = findfirst(el -> el == "valves", data)
-    if valves == nothing
+    if isnothing(valves)
         valves = findfirst(el -> el == "valve", data)
     end
     return replace.(data[valves+1:end], "," => "")
@@ -53,13 +53,13 @@ function bfs(map::NodeMap{T}, start::T) where T
     return distances
 end
 
-function findbest(map, distances, key, opened)
+function findbest(map, distances, key, opened, avoid)
     best = 0.0
     index = nothing
     for (k, dist) in distances
-        if !(k in opened)
+        if !(k in opened) && !(k in avoid)
             valve = map[k]
-            d = distances[key][k]
+            d = dist[key]
             d = d == 0 ? 1 : d
             if valve.flow / d > best
                 best = valve.flow / d
@@ -70,74 +70,84 @@ function findbest(map, distances, key, opened)
     return index
 end
 
-function main(filename, seconds = 30, verbose = false)
+function randomwalk(map, distances, next, n)
+    opened = Set()
+    s = 0
+    order = []
+    while n > 0
+        push!(order, next)
+        node = map[next]
+        if node.flow > 0 && !(next in opened)
+            s += node.flow
+            push!(opened, next)
+        end
+        next = rand(node.valves)
+        n -= 1
+    end
+    return s, order
+end
+
+function elementsat(paths::Vector{Vector{T}}, pos::Int) where T
+    if length(paths) == 0 || length(paths[1]) < pos
+        return Set{T}()
+    end
+    return Set(paths .|> el -> el[pos])
+end
+
+function findpath(map, distances, minutes, next, otherpaths::Vector{Vector{String}})
+    opened = Set{String}()
+    visited = String[]
+    i = 1
+    s = 0
+    tot = 0
+    while !isnothing(next)
+        push!(visited, next)
+        node = map[next]
+        if node.flow > 0 && !(next in opened)
+            push!(opened, next)
+            s += node.flow
+            tot += node.flow * (minutes-i)
+            println("Minute $(i) node $(next) $(node.flow) * $(minutes-i)")
+        end
+        prev = next
+        avoid = elementsat(otherpaths, length(visited)+1)
+        println("Keys to avoid $(avoid)")
+        next = findbest(map, distances, next, opened, avoid)
+        if !isnothing(next)
+            i += distances[prev][next] + 1
+        end
+    end    
+    return visited, s, tot
+end
+
+function main(filename, minutes = 30, verbose = false)
+
+    @assert elementsat([[1]],1) == Set([1]) "Result is $(elementsat([[1]],1)) instead of $(Set([1]))"
+    @assert elementsat([[1,3,4,5], [2,3,4,5]],1) == Set([1,2]) "Result is $(elementsat([[1]],1)) instead of $(Set([1]))"
+
+
     map, next = parseInput(filename)
     # println.(zip(keys(map), values(map)))
     n = length(keys(map))
-    setofvalues = (values(map) .|> val -> val.flow)
-    best = setofvalues |> sum
     distances = Dict{String, Dict{String, Int}}()
     for k in keys(map) |> collect |> sort
         # println(k, " => ", map[k])
         distances[k] = bfs(map, k)
     end
-    # @show distances
-    opened = []
-    s = 0
-    tot = 0
-    i = 1
-    operation = ""
-    steps = 0
-    while i <= seconds && !isnothing(next)
-        curr = next
-        next = findbest(map, distances, next, opened)
-        if !isnothing(next)
-            # now should i open or should i change?
-            # i will change
-            # 1 second to move from curr to next
-            # 1 second to open
-            # but i could need more than 1 second to move
-            # i spend a second for each move from node to node
-            println("== Minute $(i) ==")
-            msg = length(opened) == 0 ? "No valves are open." : "Valve $(join(opened, ", ")) are open"
-            msg *= s == 0 ? "" : ", releasing $(s) pressure" 
-            println(msg)
-            if operation == ""
-                println("You move to valve $(next).")
-                # but how long is the distance?
-                delta = distances[curr][next]
-                # println("That is at distance $(delta)")
-                # distance is stored in delta
-                operation = "open"
-                steps = delta
-                curr = next
-            elseif operation == "open"
-                if steps == 1
-                    println("You open valve $(curr).")
-                    push!(opened, curr)
-                    tot += map[next].flow * (seconds - (i+1))
-                    s += map[next].flow
-                    operation = ""
-                else
-                    steps -= 1
-                end
-            end
-            # push!(opened, )
-
-            
-            
-            
-            # println("distance from $(curr) to $(next) is $(delta)")
-            # println("delta $(delta)")
-            # seconds -= delta
-            # println("flow * seconds  = $(map[next].flow) * $(seconds)")
-            # println("best node from $(curr) is $(next)")
+    paths = Vector{Vector{String}}()
+    bests = 0
+    besttot = 0
+    for _ = 1:10
+        path, s, tot = findpath(map, distances, minutes, next, paths)
+        push!(paths, path)
+        if tot > besttot
+            besttot = tot
+            bests = s
         end
         println()
-        i +=  1
     end
-
-    return s, tot
+    println(path)
+    return bests, besttot
 end
 
 @time println(main("easy.txt", 30))
