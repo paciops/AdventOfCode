@@ -17,3 +17,9 @@ end
     @test AdventOfCode2023.Day2.solve(inputtest) == (8, 2286)
     println("Result day 2 part 1:\t", @time AdventOfCode2023.Day2.solve())
 end
+
+@testset "Day 3" begin
+    inputtest = testfile(3)
+    @test AdventOfCode2023.Day3.solve(inputtest) == (4361, 467835)
+    println("Result day 3 part 1:\t", @time AdventOfCode2023.Day3.solve())
+end

@@ -11,7 +11,7 @@ function todict(array::Array{String})
     return dict
 end
 
-function solve(input::String = AdventOfCode2023.readinput(2); partTwo = false)
+function solve(input::String = AdventOfCode2023.readinput(2))
     limit = Dict("red" => 12, "green" => 13, "blue" => 14)
     acc = 0
     product = 0
