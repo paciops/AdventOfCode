@@ -15,11 +15,23 @@ end
 @testset "Day 2" begin
     inputtest = testfile(2)
     @test AdventOfCode2023.Day2.solve(inputtest) == (8, 2286)
-    println("Result day 2 part 1:\t", @time AdventOfCode2023.Day2.solve())
+    println("Result day 2:\t", @time AdventOfCode2023.Day2.solve())
 end
 
 @testset "Day 3" begin
     inputtest = testfile(3)
     @test AdventOfCode2023.Day3.solve(inputtest) == (4361, 467835)
-    println("Result day 3 part 1:\t", @time AdventOfCode2023.Day3.solve())
+    println("Result day 3:\t", @time AdventOfCode2023.Day3.solve())
+end
+
+@testset "Day 4" begin
+    inputtest = testfile(4)
+    @test AdventOfCode2023.Day4.solve(inputtest) == (13, 30)
+    println("Result day 4:\t", @time AdventOfCode2023.Day4.solve())
+end
+
+@testset "Day 6" begin
+    inputtest = testfile(6)
+    @test AdventOfCode2023.Day6.solve(inputtest) == (288, 71503)
+    println("Result day 6:\t", @time AdventOfCode2023.Day6.solve())
 end
