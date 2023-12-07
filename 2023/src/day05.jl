@@ -41,10 +41,9 @@ function solve(input::String = AdventOfCode2023.readinput(5))
     m = typemax(Int)
     @showprogress for two in seedsparttwo
         n = 1 + two[end] - two[1]
-        
         values = Array{Int}(undef, n)
-        for (i, seed) in enumerate(two)
-            # @show i, seed
+        Threads.@threads for i = 1:n
+            seed = i + two[1]
             values[i] = computepath(seed)
         end
         m = min(m, minimum(values))
