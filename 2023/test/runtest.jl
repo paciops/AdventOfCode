@@ -1,6 +1,8 @@
 using AdventOfCode2023
 using Test
 
+AdventOfCode2023.includedays()
+
 testfile = (i) -> AdventOfCode2023.readinput(abspath(joinpath(@__DIR__, "..", "data", "test$(i).txt")))
 
 @testset "Day 1" begin
@@ -33,11 +35,18 @@ end
 @testset "Day 5" begin
     inputtest = testfile(5)
     @test AdventOfCode2023.Day5.solve(inputtest) == (35, 46)
-    println("Result day 5:\t", @time AdventOfCode2023.Day5.solve())
+    # too slow to run every time
+    # println("Result day 5:\t", @time AdventOfCode2023.Day5.solve())
 end
 
 @testset "Day 6" begin
     inputtest = testfile(6)
     @test AdventOfCode2023.Day6.solve(inputtest) == (288, 71503)
     println("Result day 6:\t", @time AdventOfCode2023.Day6.solve())
+end
+
+@testset "Day 7" begin
+    inputtest = testfile(7)
+    @test AdventOfCode2023.Day7.solve(inputtest) == (6440, 5905)
+    println("Result day 7:\t", @time AdventOfCode2023.Day7.solve())
 end

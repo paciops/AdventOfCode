@@ -1,9 +1,12 @@
 module AdventOfCode2023
 
 # include all days
-for file in filter(el -> startswith(el, "day"), readdir(joinpath(@__DIR__)))
-    # println("including $(file)")
-    include(file)
+function includedays()
+    folder = joinpath(@__DIR__)
+    for file in filter(el -> startswith(el, "day"), readdir(folder))
+        # println("including $(joinpath(folder, file))")
+        include(joinpath(folder, file))
+    end
 end
 
 function readinput(path::String)
