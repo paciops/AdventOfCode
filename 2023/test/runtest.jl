@@ -30,6 +30,12 @@ end
     println("Result day 4:\t", @time AdventOfCode2023.Day4.solve())
 end
 
+@testset "Day 5" begin
+    inputtest = testfile(5)
+    @test AdventOfCode2023.Day5.solve(inputtest) == (35, 46)
+    println("Result day 5:\t", @time AdventOfCode2023.Day5.solve())
+end
+
 @testset "Day 6" begin
     inputtest = testfile(6)
     @test AdventOfCode2023.Day6.solve(inputtest) == (288, 71503)

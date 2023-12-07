@@ -2,7 +2,7 @@ module AdventOfCode2023
 
 # include all days
 for file in filter(el -> startswith(el, "day"), readdir(joinpath(@__DIR__)))
-    println("including $(file)")
+    # println("including $(file)")
     include(file)
 end
 
