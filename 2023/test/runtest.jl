@@ -50,3 +50,10 @@ end
     @test AdventOfCode2023.Day7.solve(inputtest) == (6440, 5905)
     println("Result day 7:\t", @time AdventOfCode2023.Day7.solve())
 end
+
+@testset "Day 8" begin
+    inputtest = testfile(8)
+    @test AdventOfCode2023.Day8.solve(inputtest) == (6)
+    @test AdventOfCode2023.Day8.solve(testfile("8.1"); parttwo=true) == (6)
+    println("Result day 8:\t", @time (AdventOfCode2023.Day8.solve(), AdventOfCode2023.Day8.solve(;parttwo=true)))
+end
