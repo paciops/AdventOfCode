@@ -21,4 +21,6 @@ function readinput(day::Int)
     return readinput(path)
 end
 
+parseint = (value) -> parse(Int, value)
+
 end # end module

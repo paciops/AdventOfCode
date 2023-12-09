@@ -4,10 +4,8 @@ using DataStructures
 
 using AdventOfCode2023
 
-parseint = (value) -> parse(Int, value)
-
 function parseinput(input::String)
-    return split(input, '\n') .|> (line -> split(line, ' ') |> values -> (string(values[1]), parseint(values[2])))
+    return split(input, '\n') .|> (line -> split(line, ' ') |> values -> (string(values[1]), AdventOfCode2023.parseint(values[2])))
 end
 
 CardsCounterBid = Tuple{String, Accumulator, Int}
