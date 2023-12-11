@@ -69,3 +69,11 @@ end
     @test AdventOfCode2023.Day10.solve(inputtest) == (8)
     println("Result day 10:\t", @time (AdventOfCode2023.Day10.solve()))
 end
+
+@testset "Day 11" begin
+    inputtest = testfile(11)
+    p1 = AdventOfCode2023.Day11.solve(inputtest)
+    p2 = AdventOfCode2023.Day11.solve(inputtest, expansion = 10)
+    @test (p1, p2) == (374, 1030)
+    println("Result day 11:\t", @time (AdventOfCode2023.Day11.solve(), AdventOfCode2023.Day11.solve(;expansion = 1000000)))
+end
