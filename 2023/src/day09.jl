@@ -1,7 +1,5 @@
 module Day9
 
-using Folds
-
 using AdventOfCode2023
 
 notallsame(x) = any(y -> y !== first(x), x)
