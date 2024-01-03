@@ -43,7 +43,7 @@ function parseinput(input::String)
     return Dict(pairs), n, m
 end
 
-function getneighbors(curr::Complex{Int}, (n,m)::Tuple{Int, Int})
+function getneighbors(curr::Complex{Int})
     return [
         curr - 1im, # NORD
         curr + 1im, # SOUTH
@@ -52,27 +52,46 @@ function getneighbors(curr::Complex{Int}, (n,m)::Tuple{Int, Int})
     ]
 end
 
-function bfs(start::Complex{Int}, data::Dict{Complex{Int}, Any}, n::Int, m::Int)
+function bfs(start::Complex{Int}, data::Dict{Complex{Int}, Any})
     queue = [start]
-    visited = Set()
+    visited = Set{Complex{Int}}()
     distances = Dict(start => 0)
     while !isempty(queue)
         curr = popfirst!(queue)
+        push!(visited, curr)
         delta = distances[curr] + 1
-        for i in filter(k -> haskey(data, k) && !(k in visited) && data[k](k, curr), getneighbors(curr, (n, m)))
+        for i in filter(k -> haskey(data, k) && !(k in visited) && data[k](k, curr), getneighbors(curr))
             push!(queue, i)
             distances[i] = delta
         end
-        push!(visited, curr)
     end
     return distances, visited
+end
+
+function countpipes(unitrange::UnitRange{Int}, visited::Set{Complex{Int}}, offset::Union{Complex{Int}, Int})
+    imagoffest = typeof(offset) == Int ? 1im : 1
+    line = collect(unitrange) .* imagoffest .+ offset
+    common = intersect(line, visited)
+    return length(common)
+end
+
+function countpipes(x::Int, y::Int, n::Int, m::Int, visited::Set{Complex{Int}})
+    return countpipes(1:x-1, visited, y* 1im) |> isodd && countpipes(x+1:n, visited, y* 1im) |> isodd && 
+        countpipes(1:y-1, visited, x) |> isodd && countpipes(y+1:m, visited, x) |> isodd
 end
 
 function solve(input::String = AdventOfCode2023.readinput(10))
     dict, n, m = parseinput(input)
     startposition = findfirst(e -> e == true, dict)
-    distances, visited = bfs(startposition, dict, n, m)
-    @show setdiff(keys(dict), visited)
+    distances, visited = bfs(startposition, dict)
+    emptytiles = setdiff(keys(dict), visited)
+    count = 0
+    for tile in emptytiles
+        x = real(tile)
+        y = imag(tile)
+        condition = countpipes(x, y, n, m,  visited)
+        count += condition ? 1 : 0
+    end
     return maximum(last, distances)
 end
     
