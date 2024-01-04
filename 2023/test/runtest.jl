@@ -81,5 +81,11 @@ end
 @testset "Day 12" begin
     inputtest = testfile(12)
     @test (AdventOfCode2023.Day12.solve(inputtest)) == (21, 525152)
-    println("Result day 11:\t", @time AdventOfCode2023.Day12.solve())
+    println("Result day 12:\t", @time AdventOfCode2023.Day12.solve())
+end
+
+@testset "Day 13" begin
+    inputtest = testfile(13)
+    @test (AdventOfCode2023.Day13.solve(inputtest)) == (405, 400)
+    println("Result day 13:\t", @time AdventOfCode2023.Day13.solve())
 end
