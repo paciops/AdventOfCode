@@ -73,8 +73,8 @@ function solve(input::String = AdventOfCode2023.readinput(12))
     parsedinput = parseinput(input)
     cache = Cache()
     calcwithcache = (tuple) -> calcsimilar(tuple, cache)
-    part1 = @time map(calcwithcache, parsedinput)
-    part2 = @time map(calcwithcache, ntimes.(parsedinput))
+    part1 = map(calcwithcache, parsedinput)
+    part2 = map(calcwithcache, ntimes.(parsedinput))
     return sum(part1), sum(part2)
 end
 
