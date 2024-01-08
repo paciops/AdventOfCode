@@ -4,7 +4,7 @@ using AdventOfCode2023
 
 
 function parseinput(input::String)
-    return map(line -> split(line, '\n') |> stack |> permutedims, split(input, "\n\n"))
+    return map(line -> filter(!isempty, split(line, '\n')) |> stack |> permutedims, split(input, "\n\n"))
 end
 
 rowdiff = (prev, curr) -> reduce((a,e) -> (e !== 0) + a, prev - curr ; init=0)
